@@ -1,0 +1,15 @@
+计沮
+.exe -i Rock1.bmp Rock2.bmp -o outfile_1.bmp -r 50 -s 1024
+
+计沮
+.exe -i Rock1.bmp Rock2.bmp -o outfile_2.bmp -r 100 -s 1024
+
+计沮
+.exe -i Tree1.jpg Tree2.jpg -o outfile_3.jpg -r 50 -s 1024
+
+计沮
+.exe -i Tree1.jpg Tree2.jpg -o outfile_4.jpg -r 100 -s 1024
+
+计沮き
+.exe -i Rock1.bmp Rock2.bmp -o outfile_5.bmp -r 128 -s 2048
+
