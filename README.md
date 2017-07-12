@@ -36,19 +36,13 @@ IDE                                   Visual Studio 2017
 ***
 
 # 思路
-簡單的圖像拼接，是將兩張圖像的邊緣靠攏，生成一張新的圖像。**兩張圖像簡單拼接，邊界是一條直線，並且生成新圖像不需要重疊。新生成的圖像長度或寬度是原來兩張圖像的加總**
-
+簡單的圖像拼接，是將兩張圖像的邊緣靠攏，生成一張新的圖像。**兩張圖像簡單拼接，邊界是一條直線，並且生成新圖像不需要重疊。新生成的圖像長度或寬度是原來兩張圖像的加總。**
 ![](http://codingstory.net/content/images/2017/05/QQ--20170528190228.png)
 
 圖像無縫拼接，是將兩張圖像的邊緣重疊一部分後，生成一張新的圖像。**圖像的無縫拼接，邊界是一條歪歪扭扭的折線，因為有重疊，所以新生成的圖像長度或寬度要小於原來兩張圖像的加總**
-
 ![](http://codingstory.net/content/images/2017/07/view3-3.png)
 
 ######紋理合成的關鍵就是，兩張圖像無縫拼接成一張圖像，重疊部分的邊界如何確定。
-
-* 先重複做垂直拼貼操作，直到垂直拼貼生成的圖像 rows > 要求的 rows
-* 再對垂直拼貼操作生成的圖像，重複做水平拼貼操作，直到水平拼贴生成的图像 cols > 要求的 cols
-* 最後對經過垂直拼貼和水平拼貼操作生成的圖像，進行裁剪。裁剪為要求的紋理合成影像大小 ( rows x cols )
 
 ***
 
@@ -75,6 +69,8 @@ Mat rock1 = rock1_;
 Mat rock2 = rock2_;
 int i, j;
 int cutRows = 50; // number of overlapping rows
+int rows = rock1.rows;
+int cols = rock2.cols;
 Vec3b** upPicture = NULL;
 Vec3b** downPicture = NULL;
 
@@ -108,13 +104,15 @@ for (i = 0; i < cutRows; i++) {  // initialize lower part overlap pixel
 ##### ( 2 ) 用重疊区域像素權重構造 Assembly-line
 現在，在 `Mat **upPicture` 和 `Mat **downPicture` 二維陣列中，存放了上方圖像和下方圖像將要重疊的所有像素。
 
-由**前言**中對像素權重的介紹可知，Assembly-line 中存放的是重疊區域每個像素的權重。每個像素的權重是根據`Mat **upPicture` 與 `Mat **downPicture` 對應像素點的 RGB 值的歐式計算得出的。
+由**前言**中對像素權重的介紹可知，Assembly-line 中存放的是重疊區域每個像素的權重。每個像素的權重是根據`Mat **upPicture` 與 `Mat **downPicture` 對應像素點的 RGB 值的歐式距離計算得出的。
 
 **重疊區域有多少個像素點，Assembly-line 就一一對應著多少個工作站。同時這每一個像素的權重，也代表著 Assembly-line 中對應工作站所需要耗費的時間。**
 ![](http://codingstory.net/content/images/2017/07/QQ--20170712161908-1.png)
 
 ```
 double** Assembly_actually = NULL;
+Vec3b** upPicture = NULL;
+Vec3b** downPicture = NULL;
 
 Assembly_actually = (double**)calloc(cutRows, sizeof(double*)); // assembly line array contains each pixel weight calculated by RGB
 for (i = 0; i < cutRows; i++)
@@ -136,14 +134,23 @@ for (i = 0; i < cutRows; i++) {
 ##### ( 3 ) 找出重疊區域的最短路徑，即無縫拼接中兩張圖像重疊部分的邊界路徑。
 [使用 Dynamic Programming 解決生產線排程問題](http://codingstory.net/assembly-line-scheduling-zhuang-pei-xian-diao-du/)
 
-現在 Assembly-line Scheduling 中各個工作站的權重已經準備好了。**( 在這個問題中，不存在 Transfer 的時間開銷。每個工作站的生產線選擇，有 2 或 3 條。 )**
+現在 Assembly-line Scheduling 中各個工作站的權重已經準備好了。  
+**在這個問題中**
 
-使用 Dynamic Programming 計算出 Assembly-line Scheduling 最短路徑的
+* 1、Assembly-line 的起點和終點有多個。
+* 2、時間耗費不需要計算 Transfer 的時間開銷。
+* 3、到達下一個工作站的生產線，有 2 或 3 條可供選擇。
+![](http://codingstory.net/content/images/2017/07/Assembly-line-Model.png)
+
+###### 使用 Dynamic Programming 計算出 Assembly-line Scheduling 最短路徑
 
 ```
+Mat rock1 = rock1_;
+Mat rock2 = rock2_;
 int rows = rock1.rows;
 int cols = rock2.cols;
 double** f = NULL; // record the value of the shorest distance from starting point to current pixel
+double** Assembly_actually = NULL;
 	int** l = NULL; // record assembly line path
 
 	f = (double**)calloc(cutRows, sizeof(double*));
@@ -265,6 +272,10 @@ double** f = NULL; // record the value of the shorest distance from starting poi
 ![](http://codingstory.net/content/images/2017/07/boundaryPotion---2.png)
 
 ```
+/*
+    An example codes
+*/
+
 int upPicture.rows; // the number of up picture total rows
 int downPicture.rows; // the number of down picture total rows
 int cutRows; // the number of overlapping rows
@@ -288,8 +299,18 @@ if( boundaryPosition[x] == y )
 
 新圖像中，座標在邊界下方的像素點，用下方圖像的像素賦給新圖像。
 
+新圖像的 `rows number == upPicture.rows + downPicture.rows - cutRows;`   
+**注意:** 新圖像像素的座標，和下方圖像像素座標的相對位置是不同的
+
 ```
+Mat rock1 = rock1_;
+Mat rock2 = rock2_;
 Mat kimCreate;
+
+int rows = rock1.rows;
+int cutRows = 50; // number of overlapping rows
+int cols = rock2.cols;
+int* boundaryPosition;
 
 kimCreate.create(2 * rows - cutRows, cols, CV_8UC3);  // synthesis upper picture and lower picture for one picture
 	for (i = 0; i < (2 * rows - cutRows); i++) {
@@ -617,3 +638,4 @@ int main(int argc, char** argv) {
 ****
 # 以上
 2017 年 7 月 12 日
+
