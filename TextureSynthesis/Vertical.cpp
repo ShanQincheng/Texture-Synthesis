@@ -27,15 +27,15 @@ Mat Vertical(Mat rock1_, Mat rock2_, int cutRows) {
 		Assembly_actually[i] = (double*)calloc(cols, sizeof(double));
 	}
 
-	for (i = (rows - cutRows); i < rows; i++) {     // initialize upper part overlap pixel
-		for (j = 0; j < cols; j++) {
+	for (i = (rock1.rows - cutRows); i < rock1.rows; i++) {     // initialize upper part overlap pixel
+		for (j = 0; j < rock1.cols; j++) {
 			Vec3b rock1RGB = rock1.at<Vec3b>(i, j); // get pixel from upper picture
-			upPicture[i - (rows - cutRows)][j] = rock1RGB; // assign pixel to upPicture pixel array
+			upPicture[i - (rock1.rows - cutRows)][j] = rock1RGB; // assign pixel to upPicture pixel array
 		}
 	}
 
 	for (i = 0; i < cutRows; i++) {  // initialize lower part overlap pixel
-		for (j = 0; j < cols; j++) {
+		for (j = 0; j < rock2.cols; j++) {
 			Vec3b rock2RGB = rock2.at<Vec3b>(i, j); // get pixel from lower picture
 			downPicture[i][j] = rock2RGB; // assign pixel to downPicture pixel array
 		}
@@ -43,7 +43,7 @@ Mat Vertical(Mat rock1_, Mat rock2_, int cutRows) {
 
 	for (i = 0; i < cutRows; i++) {
 		for (j = 0; j < cols; j++) {
-			// d == ¡Ì ( (R1 - R2)^2 + (B1 - B2)^2 + (G1 - G2)^2 )
+			// d ==  ( (R1 - R2)^2 + (B1 - B2)^2 + (G1 - G2)^2 )
 			Assembly_actually[i][j] = sqrt(pow((upPicture[i][j].val[0] - downPicture[i][j].val[0]), 2) + pow((upPicture[i][j].val[1] - downPicture[i][j].val[1]), 2) + pow((upPicture[i][j].val[2] - downPicture[i][j].val[2]), 2));
 		}
 	}
@@ -159,18 +159,18 @@ Mat Vertical(Mat rock1_, Mat rock2_, int cutRows) {
 	lineNum = l[position][cols - 1];
 
 	for (i = cols - 1; i >= 0; i--) {
-		lineNum = l[lineNum][i];  // from which row to here, upper, middle or lower ?
+		lineNum = l[lineNum][i];  // from which row to here, upper, middle or lower 
 		boundaryPosition[i] = lineNum; // record the shortest distance path each step
 	}
 
-	kimCreate.create(2 * rows - cutRows, cols, CV_8UC3);  // synthesis upper picture and lower picture for one picture
-	for (i = 0; i < (2 * rows - cutRows); i++) {
+	kimCreate.create(rock1.rows + rock2.rows - cutRows, cols, CV_8UC3);  // synthesis upper picture and lower picture for one picture
+	for (i = 0; i < (rock1.rows + rock2.rows - cutRows); i++) {
 		for (j = 0; j < cols; j++) {
-			if (i <= boundaryPosition[j] + (rows - cutRows)) {  // above the boundary edge
+			if (i <= boundaryPosition[j] + (rock1.rows - cutRows)) {  // above the boundary edge
 				kimCreate.at<Vec3b>(i, j) = rock1.at<Vec3b>(i, j);
 			}
 			else {
-				kimCreate.at<Vec3b>(i, j) = rock2.at<Vec3b>((i - (rows - cutRows)), j);
+				kimCreate.at<Vec3b>(i, j) = rock2.at<Vec3b>((i - (rock1.rows - cutRows)), j);
 			}
 		}
 	}

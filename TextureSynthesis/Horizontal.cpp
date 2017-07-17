@@ -22,10 +22,10 @@ Mat Horizontal(Mat rock1_, Mat rock2_, int cutCols)
 	}
 
 	// initialize left picture array, from left to right boundary
-	for (i = (cols - cutCols); i < cols; i++) {
+	for (i = (rock1.cols - cutCols); i < rock1.cols; i++) {
 		for (j = 0; j < rows; j++) {
 			Vec3b rock1RGB = rock1.at<Vec3b>(j, i);
-			leftPicture[i - (cols - cutCols)][j] = rock1RGB;
+			leftPicture[i - (rock1.cols - cutCols)][j] = rock1RGB;
 		}
 	}
 
@@ -47,7 +47,7 @@ Mat Horizontal(Mat rock1_, Mat rock2_, int cutCols)
 
 	for (i = 0; i < cutCols; i++) {
 		for (j = 0; j < rows; j++) {
-			// d == ¡Ì ( (R1 - R2)^2 + (B1 - B2)^2 + (G1 - G2)^2 )
+			// d ==  ( (R1 - R2)^2 + (B1 - B2)^2 + (G1 - G2)^2 )
 			Assembly_actually[i][j] = sqrt(pow((leftPicture[i][j].val[0] - rightPicture[i][j].val[0]), 2) + pow((leftPicture[i][j].val[1] - rightPicture[i][j].val[1]), 2) + pow((leftPicture[i][j].val[2] - rightPicture[i][j].val[2]), 2));
 		}
 	}
@@ -164,15 +164,16 @@ Mat Horizontal(Mat rock1_, Mat rock2_, int cutCols)
 	*/
 
 	// create a picture , note the paras order --  rows, cols, type
-	kimCreate.create(rows, 2 * cols - cutCols, CV_8UC3);
+	//kimCreate.create(rows, 2 * cols - cutCols, CV_8UC3);
+	kimCreate.create(rows, rock1.cols + rock2.cols - cutCols, CV_8UC3);
 	// assign the new picture from left to right and up to down
 	for (i = 0; i < rows; i++) {
-		for (j = 0; j < (2 * cols - cutCols); j++) {
-			if (j <= boundaryPosition[i] + (cols - cutCols)) {  // at the left of the boundary edge
+		for (j = 0; j < (rock1.cols + rock2.cols - cutCols); j++) {
+			if (j <= boundaryPosition[i] + (rock1.cols - cutCols)) {  // at the left of the boundary edge
 				kimCreate.at<Vec3b>(i, j) = rock1.at<Vec3b>(i, j);
 			}
 			else {
-				kimCreate.at<Vec3b>(i, j) = rock2.at<Vec3b>(i, (j - (cols - cutCols)));
+				kimCreate.at<Vec3b>(i, j) = rock2.at<Vec3b>(i, (j - (rock1.cols - cutCols)));
 			}
 
 		}
