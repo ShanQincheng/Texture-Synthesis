@@ -99,7 +99,7 @@ Mat Horizontal(Mat rock1_, Mat rock2_, int cutCols)
 			// if there are two paths can be choosed
 			else {
 				// left boundary
-				if (j == 0) {
+				if (j == 0 && cutCols > 1) {
 					// if middle path is the shortest path
 					if (f[j][i - 1] + Assembly_actually[j][i] < f[j + 1][i - 1] + Assembly_actually[j][i]) {
 						f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
@@ -117,7 +117,7 @@ Mat Horizontal(Mat rock1_, Mat rock2_, int cutCols)
 
 				}
 				// right boundary
-				else {
+				else if(j == (cutCols - 1) && cutCols > 1){
 					if (f[j][i - 1] + Assembly_actually[j][i] < f[j - 1][i - 1] + Assembly_actually[j][i]) {
 						f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
 						l[j][i] = j;
@@ -130,6 +130,14 @@ Mat Horizontal(Mat rock1_, Mat rock2_, int cutCols)
 						f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
 						l[j][i] = j;
 					}
+				}
+				// if there is only one path can be choose
+				else if (cutCols == 1) {
+					f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
+					l[j][i] = j;
+				}
+				else {
+					exit(-1);
 				}
 			}
 		}

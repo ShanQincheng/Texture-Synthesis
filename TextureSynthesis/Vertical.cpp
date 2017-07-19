@@ -99,7 +99,7 @@ Mat Vertical(Mat rock1_, Mat rock2_, int cutRows) {
 			// if there are two path can be choosed, the top line or the bottom line
 			else {
 				// the top line
-				if (j == 0) {
+				if (j == 0 && cutRows > 1) {
 					// if middle path is shortest
 					if (f[j][i - 1] + Assembly_actually[j][i] < f[j + 1][i - 1] + Assembly_actually[j][i]) {
 						f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
@@ -118,7 +118,7 @@ Mat Vertical(Mat rock1_, Mat rock2_, int cutRows) {
 
 				}
 				// the bottom line
-				else {
+				else if(j == (cutRows - 1) && cutRows > 1){
 					// if middle path is shortest
 					if (f[j][i - 1] + Assembly_actually[j][i] < f[j - 1][i - 1] + Assembly_actually[j][i]) {
 						f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
@@ -134,6 +134,15 @@ Mat Vertical(Mat rock1_, Mat rock2_, int cutRows) {
 						f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
 						l[j][i] = j;
 					}
+				}
+				// if there is only one path can be choose
+				else if (cutRows == 1)
+				{
+					f[j][i] = f[j][i - 1] + Assembly_actually[j][i];
+					l[j][i] = j;
+				}
+				else {
+					exit(-1);
 				}
 			}
 		}
